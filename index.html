@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketbola Treniņu Grafiks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .login-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .login-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 28rem;
+            margin: 0 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            z-index: 10;
+            padding: 2rem;
+        }
+
+        .logo-circle {
+            width: 4rem;
+            height: 4rem;
+            background-color: #ea580c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            fill: white;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: #ea580c;
+            color: white;
+            padding: 0.625rem 1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #c2410c;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: white;
+        }
+
+        .btn-ghost:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-outline:hover {
+            background-color: #f9fafb;
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .demo-text {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        /* Schedule Page Styles */
+        .schedule-container {
+            min-height: 100vh;
+            background-color: #f9fafb;
+            display: none;
+        }
+
+        .schedule-container.active {
+            display: block;
+        }
+
+        .header {
+            background-color: #ea580c;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            width: 3rem;
+            height: 3rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header-title p {
+            font-size: 0.875rem;
+            color: #fed7aa;
+        }
+
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        .calendar-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .week-grid {
+                grid-template-columns: repeat(7, 1fr);
+            }
+        }
+
+        .day-cell {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            min-height: 200px;
+        }
+
+        .day-cell.today {
+            border-color: #ea580c;
+            background-color: #fff7ed;
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .day-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .day-number {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+
+        .day-number.today {
+            color: #ea580c;
+        }
+
+        .add-btn {
+            width: 2rem;
+            height: 2rem;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .event-item {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid;
+            font-size: 0.75rem;
+        }
+
+        .event-training {
+            background-color: #ffedd5;
+            border-color: #fdba74;
+            color: #9a3412;
+        }
+
+        .event-game {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .event-news {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+            color: #1e3a8a;
+        }
+
+        .event-time {
+            font-weight: 600;
+        }
+
+        .event-title {
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        .event-meta {
+            font-size: 0.65rem;
+            opacity: 0.75;
+            margin-top: 0.25rem;
+        }
+
+        .legend {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border: 1px solid;
+            border-radius: 0.25rem;
+        }
+
+        .legend-training {
+            background-color: #ffedd5;
+            border-color: #fdba74;
+        }
+
+        .legend-game {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+        .legend-news {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-bg">
+            <img src="https://images.unsplash.com/photo-1577416412292-747c6607f055?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXNrZXRiYWxsJTIwY291cnR8ZW58MXx8fHwxNzY4MjQ2MjcyfDA&ixlib=rb-4.1.0&q=80&w=1080" alt="Basketball Court">
+            <div class="login-overlay"></div>
+        </div>
+        <div class="login-card">
+            <div class="logo-circle">
+                <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                </svg>
+            </div>
+            <h2 class="card-title">Basketbola Treniņi</h2>
+            <p class="card-description">Piesakieties, lai piekļūtu treniņu grafikam</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Lietotājvārds</label>
+                    <input type="text" id="username" placeholder="Ievadiet lietotājvārdu" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Parole</label>
+                    <input type="password" id="password" placeholder="Ievadiet paroli" required>
+                </div>
+                <p id="errorText" class="error-text hidden"></p>
+                <button type="submit" class="btn btn-primary">Pierakstīties</button>
+                <p class="demo-text">Demo režīms: izmantojiet jebkuru lietotājvārdu un paroli</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Schedule Page -->
+    <div id="schedulePage" class="schedule-container">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-logo">
+                        <svg style="width: 2rem; height: 2rem; fill: white;" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                        </svg>
+                    </div>
+                    <div class="header-title">
+                        <h1>Basketbola Treniņu Grafiks</h1>
+                        <p>Sveicināts, <span id="usernameDisplay"></span>!</p>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn btn-ghost">
+                    <svg style="width: 1rem; height: 1rem; display: inline; vertical-align: middle; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Iziet
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="calendar-card">
+                <div class="calendar-nav">
+                    <button id="prevWeek" class="btn btn-outline">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 id="calendarTitle" class="calendar-title"></h2>
+                    <button id="nextWeek" class="btn btn-outline">
+                        <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="weekGrid" class="week-grid"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-training"></div>
+                    <span>Treniņš</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-game"></div>
+                    <span>Spēle</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-news"></div>
+                    <span>Jaunums</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Pievienot Jaunumu</h3>
+                <p id="modalDescription" class="modal-description"></p>
+            </div>
+            <form id="eventForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="eventType">Tips</label>
+                        <select id="eventType" required>
+                            <option value="training">Treniņš</option>
+                            <option value="game">Spēle</option>
+                            <option value="news">Jaunums</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTitle">Nosaukums</label>
+                        <input type="text" id="eventTitle" placeholder="Ievadiet nosaukumu" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime">Laiks</label>
+                        <input type="time" id="eventTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDescription">Apraksts (izvēles)</label>
+                        <textarea id="eventDescription" rows="3" placeholder="Pievienojiet papildu informāciju..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cancelModal" class="btn btn-outline">Atcelt</button>
+                    <button type="submit" class="btn btn-primary">Pievienot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentUser = '';
+        let currentDate = new Date();
+        let selectedDate = null;
+        let events = [
+            {
+                id: '1',
+                title: 'Jauniešu treniņš',
+                time: '17:00',
+                date: new Date(),
+                author: 'Treneris Jānis',
+                type: 'training'
+            },
+            {
+                id: '2',
+                title: 'Pieaugušo treniņš',
+                time: '19:00',
+                date: new Date(),
+                author: 'Treneris Jānis',
+                type: 'training'
+            },
+            {
+                id: '3',
+                title: 'Draudzības spēle',
+                time: '18:00',
+                date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+                author: 'Organizators',
+                type: 'game'
+            },
+            {
+                id: '4',
+                title: 'Jauni spēlētāji gaidīti!',
+                time: '10:00',
+                date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+                author: 'Admin',
+                type: 'news'
+            }
+        ];
+
+        // Utility functions
+        function getMonthNameLV(date) {
+            const months = ['janvāris', 'februāris', 'marts', 'aprīlis', 'maijs', 'jūnijs', 
+                          'jūlijs', 'augusts', 'septembris', 'oktobris', 'novembris', 'decembris'];
+            return months[date.getMonth()];
+        }
+
+        function getDayNameLV(date) {
+            const days = ['Sv', 'Pr', 'Ot', 'Tr', 'Ce', 'Pk', 'Se'];
+            return days[date.getDay()];
+        }
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        function isSameDay(date1, date2) {
+            return date1.getDate() === date2.getDate() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getFullYear() === date2.getFullYear();
+        }
+
+        function formatDate(date) {
+            const d = date.getDate();
+            const month = getMonthNameLV(date);
+            const year = date.getFullYear();
+            return `${d} ${month}, ${year}`;
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (username && password) {
+                currentUser = username;
+                document.getElementById('loginPage').classList.remove('active');
+                document.getElementById('schedulePage').classList.add('active');
+                document.getElementById('usernameDisplay').textContent = username;
+                renderCalendar();
+            } else {
+                document.getElementById('errorText').textContent = 'Lūdzu, ievadiet lietotājvārdu un paroli';
+                document.getElementById('errorText').classList.remove('hidden');
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            currentUser = '';
+            document.getElementById('loginPage').classList.add('active');
+            document.getElementById('schedulePage').classList.remove('active');
+            document.getElementById('loginForm').reset();
+        });
+
+        // Calendar navigation
+        document.getElementById('prevWeek').addEventListener('click', function() {
+            currentDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+            renderCalendar();
+        });
+
+        document.getElementById('nextWeek').addEventListener('click', function() {
+            currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+            renderCalendar();
+        });
+
+        // Render calendar
+        function renderCalendar() {
+            const weekStart = getStartOfWeek(currentDate);
+            document.getElementById('calendarTitle').textContent = 
+                `${getMonthNameLV(weekStart)} ${weekStart.getFullYear()}`;
+            
+            const weekGrid = document.getElementById('weekGrid');
+            weekGrid.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(weekStart);
+                day.setDate(weekStart.getDate() + i);
+                
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell' + (isSameDay(day, new Date()) ? ' today' : '');
+                
+                const dayEvents = events.filter(e => isSameDay(new Date(e.date), day));
+                
+                dayCell.innerHTML = `
+                    <div class="day-header">
+                        <div>
+                            <div class="day-name">${getDayNameLV(day)}</div>
+                            <div class="day-number${isSameDay(day, new Date()) ? ' today' : ''}">${day.getDate()}</div>
+                        </div>
+                        <button class="add-btn" data-date="${day.toISOString()}">
+                            <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="events-list">
+                        ${dayEvents.map(event => `
+                            <div class="event-item event-${event.type}">
+                                <div class="event-time">${event.time}</div>
+                                <div class="event-title">${event.title}</div>
+                                <div class="event-meta">${getEventTypeLabel(event.type)} • ${event.author}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                weekGrid.appendChild(dayCell);
+            }
+
+            // Add event listeners to add buttons
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectedDate = new Date(this.getAttribute('data-date'));
+                    openModal();
+                });
+            });
+        }
+
+        function getEventTypeLabel(type) {
+            switch (type) {
+                case 'training': return 'Treniņš';
+                case 'game': return 'Spēle';
+                case 'news': return 'Jaunums';
+                default: return '';
+            }
+        }
+
+        // Modal functionality
+        function openModal() {
+            document.getElementById('modalDescription').textContent = 
+                `Pievienojiet jaunumu kalendāram datumam: ${formatDate(selectedDate)}`;
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+            document.getElementById('eventForm').reset();
+        }
+
+        document.getElementById('cancelModal').addEventListener('click', closeModal);
+
+        document.getElementById('eventModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newEvent = {
+                id: Date.now().toString(),
+                title: document.getElementById('eventTitle').value,
+                time: document.getElementById('eventTime').value,
+                date: selectedDate,
+                author: currentUser,
+                type: document.getElementById('eventType').value
+            };
+            
+            events.push(newEvent);
+            renderCalendar();
+            closeModal();
+        });
+
+        // Initialize
+        document.getElementById('loginPage').classList.add('active');
+    </script>
+</body>
+</html>
