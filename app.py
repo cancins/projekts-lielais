@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from datubaze import SQL
+from import SQL
 import hashlib
 
 app = Flask(__name__)
