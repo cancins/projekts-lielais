@@ -1,48 +1,50 @@
-from flask import Flask, render_template, request, redirect, session, url_for
-from import SQL
-import hashlib
+from flask import Flask, render_template, request, redirect, session
+from cs50 import SQL
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "parole123"
+app.config["SECRET_KEY"] = os.urandom(24)
 
-# Savienojums ar SQLite datubāzi
 db = SQL("sqlite:///datubaze.db")
 
-# --- Lietotāju serviss ---
 class UserService:
     def __init__(self, db):
         self.db = db
 
     def autentificet(self, lietotajvards, parole):
         lietotaji = self.db.execute(
-            "SELECT * FROM lietotaji WHERE lietotajvards = ? AND parole = ?",
-            lietotajvards, parole
-        )
-        return lietotaji[0] if lietotaji else None
-
-    def lietotajs_eksiste(self, lietotajvards):
-        return self.db.execute(
             "SELECT * FROM lietotaji WHERE lietotajvards = ?",
             lietotajvards
         )
 
+        if lietotaji and check_password_hash(lietotaji[0]["parole"], parole):
+            return lietotaji[0]
+        return None
+
+    def lietotajs_eksiste(self, lietotajvards):
+        lietotaji = self.db.execute(
+            "SELECT * FROM lietotaji WHERE lietotajvards = ?",
+            lietotajvards
+        )
+        return len(lietotaji) > 0
+
     def izveidot_lietotaju(self, lietotajvards, parole):
+        hashed_parole = generate_password_hash(parole)
+
         return self.db.execute(
             "INSERT INTO lietotaji (lietotajvards, parole) VALUES (?, ?)",
-            lietotajvards, parole
+            lietotajvards, hashed_parole
         )
 
 userService = UserService(db)
 
-# --- ROUTES ---
 @app.route("/")
 def index():
     if "user_id" in session:
-        # Pēc login aizved uz grafika lapu
         return redirect("/grafiks")
     return redirect("/login")
 
-# --- Login ---
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
@@ -50,20 +52,21 @@ def login():
             return redirect("/grafiks")
         return render_template("login.html")
 
-    # POST
     lietotajvards = request.form.get("lietotajvards")
     parole = request.form.get("parole")
-    hashed_parole = hashlib.md5(parole.encode("utf-8")).hexdigest()
 
-    lietotajs = userService.autentificet(lietotajvards, hashed_parole)
+    if not lietotajvards or not parole:
+        return "Aizpildi visus laukus!"
+
+    lietotajs = userService.autentificet(lietotajvards, parole)
 
     if lietotajs:
-        session["user_id"] = lietotajs["lietotajvards"]
+        session["user_id"] = lietotajs["id"]
+        session["username"] = lietotajs["lietotajvards"]
         return redirect("/grafiks")
     else:
         return "Nepareizs lietotājvārds vai parole"
 
-# --- Reģistrācija ---
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
@@ -75,31 +78,29 @@ def register():
     parole = request.form.get("parole")
     apst_parole = request.form.get("apst-parole")
 
+    if not lietotajvards or not parole or not apst_parole:
+        return "Aizpildi visus laukus!"
+
     if parole != apst_parole:
         return "Paroles nesakrīt!"
-
-    hashed_parole = hashlib.md5(parole.encode("utf-8")).hexdigest()
 
     if userService.lietotajs_eksiste(lietotajvards):
         return "Lietotājvārds jau aizņemts!"
 
-    userService.izveidot_lietotaju(lietotajvards, hashed_parole)
-    session["user_id"] = lietotajvards
-    return redirect("/grafiks")
+    userService.izveidot_lietotaju(lietotajvards, parole)
 
-# --- Grafika lapa ---
+    return redirect("/login")
+
 @app.route("/grafiks")
 def grafiks():
     if "user_id" not in session:
         return redirect("/login")
-    return render_template("grafiks.html", username=session["user_id"])
+    return render_template("grafiks.html", username=session["username"])
 
-# --- Logout ---
 @app.route("/logout")
 def logout():
-    session.pop("user_id", None)
+    session.clear()
     return redirect("/login")
 
-# --- Start servera ---
 if __name__ == "__main__":
     app.run(debug=True)
