@@ -92,4 +92,41 @@ def events():
 @app.route("/add_event", methods=["POST"])
 def add_event():
     if "user_id" not in session:
-        return
+        return "Unauthorized", 403
+
+    date = request.form.get("date")
+    time = request.form.get("time")
+
+    db.execute("""
+        INSERT INTO Kaldendars ("Notikuma datums", "Treninu laiks", Login_id)
+        VALUES (?, ?, ?)
+    """, date, time, session["user_id"])
+
+    return "OK"
+
+
+# ---------------- DELETE EVENT ----------------
+@app.route("/delete_event", methods=["POST"])
+def delete_event():
+    if "user_id" not in session:
+        return "Unauthorized", 403
+
+    date = request.form.get("date")
+
+    db.execute(
+        "DELETE FROM Kaldendars WHERE `Notikuma datums` = ?",
+        date
+    )
+
+    return "OK"
+
+
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
