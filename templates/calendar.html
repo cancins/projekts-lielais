@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f3f4f6;
+            margin: 0;
+        }
+
+        .topbar {
+            background: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #calendar {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <div>👋 Sveiks, {{ username }}</div>
+    <a href="/logout">Logout</a>
+</div>
+
+<div id="calendar"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+
+        events: '/events',
+
+        dateClick: function(info) {
+            let time = prompt("Ievadi laiku (piem 10:00):");
+
+            if (time) {
+                fetch("/add_event", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "date=" + info.dateStr + "&time=" + time
+                }).then(() => {
+                    calendar.refetchEvents();
+                });
+            }
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+</body>
+</html>
