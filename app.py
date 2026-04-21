@@ -1,106 +1,104 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 from cs50 import SQL
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.urandom(24)
+app.config["SECRET_KEY"] = "secret123"
 
 db = SQL("sqlite:///datubaze.db")
 
-class UserService:
-    def __init__(self, db):
-        self.db = db
 
-    def autentificet(self, lietotajvards, parole):
-        lietotaji = self.db.execute(
-            "SELECT * FROM lietotaji WHERE lietotajvards = ?",
-            lietotajvards
-        )
-
-        if lietotaji and check_password_hash(lietotaji[0]["parole"], parole):
-            return lietotaji[0]
-        return None
-
-    def lietotajs_eksiste(self, lietotajvards):
-        lietotaji = self.db.execute(
-            "SELECT * FROM lietotaji WHERE lietotajvards = ?",
-            lietotajvards
-        )
-        return len(lietotaji) > 0
-
-    def izveidot_lietotaju(self, lietotajvards, parole):
-        hashed_parole = generate_password_hash(parole)
-
-        return self.db.execute(
-            "INSERT INTO lietotaji (lietotajvards, parole) VALUES (?, ?)",
-            lietotajvards, hashed_parole
-        )
-
-userService = UserService(db)
-
-@app.route("/")
-def index():
-    if "user_id" in session:
-        return redirect("/grafiks")
-    return redirect("/login")
-
+# ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        if "user_id" in session:
-            return redirect("/grafiks")
         return render_template("login.html")
 
     lietotajvards = request.form.get("lietotajvards")
     parole = request.form.get("parole")
 
-    if not lietotajvards or not parole:
-        return "Aizpildi visus laukus!"
+    rows = db.execute(
+        "SELECT * FROM Login WHERE Lietotajvards = ?",
+        lietotajvards
+    )
 
-    lietotajs = userService.autentificet(lietotajvards, parole)
+    if len(rows) == 1 and check_password_hash(rows[0]["Parole"], parole):
+        session["user_id"] = rows[0]["id"]
+        session["username"] = rows[0]["Lietotajvards"]
+        return redirect("/calendar")
 
-    if lietotajs:
-        session["user_id"] = lietotajs["id"]
-        session["username"] = lietotajs["lietotajvards"]
-        return redirect("/grafiks")
-    else:
-        return "Nepareizs lietotājvārds vai parole"
+    return "Nepareizi dati"
 
+
+# ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
-        if "user_id" in session:
-            return redirect("/grafiks")
         return render_template("register.html")
 
     lietotajvards = request.form.get("lietotajvards")
     parole = request.form.get("parole")
-    apst_parole = request.form.get("apst-parole")
 
-    if not lietotajvards or not parole or not apst_parole:
-        return "Aizpildi visus laukus!"
+    hash_parole = generate_password_hash(parole)
 
-    if parole != apst_parole:
-        return "Paroles nesakrīt!"
-
-    if userService.lietotajs_eksiste(lietotajvards):
-        return "Lietotājvārds jau aizņemts!"
-
-    userService.izveidot_lietotaju(lietotajvards, parole)
+    db.execute(
+        "INSERT INTO Login (Lietotajvards, Parole) VALUES (?, ?)",
+        lietotajvards, hash_parole
+    )
 
     return redirect("/login")
 
-@app.route("/grafiks")
-def grafiks():
+
+# ---------------- CALENDAR PAGE ----------------
+@app.route("/calendar")
+def calendar():
     if "user_id" not in session:
         return redirect("/login")
-    return render_template("grafiks.html", username=session["username"])
+
+    return render_template("calendar.html", username=session["username"])
+
+
+# ---------------- GET EVENTS ----------------
+@app.route("/events")
+def events():
+    if "user_id" not in session:
+        return jsonify([])
+
+    rows = db.execute("SELECT * FROM Kaldendars")
+
+    events = []
+    for r in rows:
+        events.append({
+            "title": f"🏀 Treniņš ({r['Treninu laiks']})",
+            "start": r["Notikuma datums"]
+        })
+
+    return jsonify(events)
+
+
+# ---------------- ADD EVENT ----------------
+@app.route("/add_event", methods=["POST"])
+def add_event():
+    if "user_id" not in session:
+        return "Unauthorized", 403
+
+    date = request.form.get("date")
+    time = request.form.get("time")
+
+    db.execute("""
+        INSERT INTO Kaldendars 
+        ("Notikuma datums", "Treninu laiks", Login_id)
+        VALUES (?, ?, ?)
+    """, date, time, session["user_id"])
+
+    return "OK"
+
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
