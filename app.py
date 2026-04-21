@@ -25,6 +25,12 @@ def login():
     lietotajvards = request.form.get("lietotajvards")
     parole = request.form.get("parole")
 
+    # ✅ HARD LOGIN (requested fix)
+    if lietotajvards == "Klievens" and parole == "Ziema2013":
+        session["user_id"] = 1
+        session["username"] = lietotajvards
+        return redirect("/calendar")
+
     rows = db.execute(
         "SELECT * FROM Login WHERE Lietotajvards = ?",
         lietotajvards
@@ -56,7 +62,7 @@ def register():
     return redirect("/login")
 
 
-# ---------------- CALENDAR PAGE ----------------
+# ---------------- CALENDAR ----------------
 @app.route("/calendar")
 def calendar():
     if "user_id" not in session:
@@ -65,7 +71,7 @@ def calendar():
     return render_template("calendar.html", username=session["username"])
 
 
-# ---------------- GET EVENTS ----------------
+# ---------------- EVENTS ----------------
 @app.route("/events")
 def events():
     if "user_id" not in session:
@@ -100,7 +106,7 @@ def add_event():
     return "OK"
 
 
-# ---------------- DELETE EVENT (bonus) ----------------
+# ---------------- DELETE EVENT ----------------
 @app.route("/delete_event", methods=["POST"])
 def delete_event():
     if "user_id" not in session:
