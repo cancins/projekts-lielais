@@ -7,7 +7,6 @@ app.config["SECRET_KEY"] = "secret123"
 
 db = SQL("sqlite:///datubaze.db")
 
-# ---------------- HOME ----------------
 @app.route("/")
 def index():
     if "user_id" in session:
@@ -15,7 +14,6 @@ def index():
     return redirect("/login")
 
 
-# ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
@@ -43,7 +41,6 @@ def login():
     return render_template("login.html", error="Nepareizs lietotājvārds vai parole")
 
 
-# ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
@@ -61,7 +58,6 @@ def register():
     return redirect("/login")
 
 
-# ---------------- CALENDAR ----------------
 @app.route("/calendar")
 def calendar():
     if "user_id" not in session:
@@ -70,7 +66,6 @@ def calendar():
     return render_template("calendar.html", username=session["username"])
 
 
-# ---------------- EVENTS ----------------
 @app.route("/events")
 def events():
     if "user_id" not in session:
@@ -88,7 +83,6 @@ def events():
     return jsonify(events)
 
 
-# ---------------- ADD EVENT ----------------
 @app.route("/add_event", methods=["POST"])
 def add_event():
     if "user_id" not in session:
@@ -105,7 +99,6 @@ def add_event():
     return "OK"
 
 
-# ---------------- DELETE EVENT ----------------
 @app.route("/delete_event", methods=["POST"])
 def delete_event():
     if "user_id" not in session:
@@ -121,7 +114,6 @@ def delete_event():
     return "OK"
 
 
-# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
